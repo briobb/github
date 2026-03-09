@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Block Pop - Complete</title>
+  <style>
+    :root{
+      --bg1:#121426;
+      --bg2:#1b2240;
+      --text:#eef3ff;
+      --muted:#b8c4ee;
+      --shadow:0 10px 30px rgba(0,0,0,.28);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, #26306b 0%, transparent 30%),
+        radial-gradient(circle at top right, #3b2f74 0%, transparent 30%),
+        linear-gradient(180deg, var(--bg2), var(--bg1));
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:16px;
+    }
+    .app{width:min(100%,560px);display:flex;flex-direction:column;gap:14px}
+    .topbar,.gameWrap,.trayPanel{
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:24px;
+      padding:14px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(8px);
+    }
+    .titleRow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+    .title{font-weight:900;letter-spacing:.02em;font-size:clamp(24px,5vw,34px);text-shadow:0 2px 10px rgba(0,0,0,.25)}
+    .subtitle{font-size:12px;color:var(--muted)}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .stat{
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;padding:10px 12px;text-align:center
+    }
+    .stat .label{font-size:12px;color:var(--muted);margin-bottom:4px}
+    .stat .value{font-size:20px;font-weight:900}
+    .board{
+      aspect-ratio:1/1;width:100%;display:grid;
+      grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
+      gap:6px;background:linear-gradient(180deg, #202855, #1a2045);
+      padding:8px;border-radius:20px;position:relative;overflow:hidden
+    }
+    .cell{
+      background:linear-gradient(180deg, #222a56, #171d3d);
+      border-radius:10px;position:relative;border:1px solid rgba(255,255,255,.04);
+      transition:transform .12s ease, background .12s ease, opacity .2s ease, outline-color .12s ease;
+    }
+    .cell.filled::after{
+      content:"";position:absolute;inset:3px;border-radius:8px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 16px rgba(0,0,0,.24);
+    }
+    .cell.c1.filled::after{ background:linear-gradient(180deg,#60a5fa,#2563eb);}
+    .cell.c2.filled::after{ background:linear-gradient(180deg,#f472b6,#db2777);}
+    .cell.c3.filled::after{ background:linear-gradient(180deg,#fbbf24,#f59e0b);}
+    .cell.c4.filled::after{ background:linear-gradient(180deg,#4ade80,#16a34a);}
+    .cell.c5.filled::after{ background:linear-gradient(180deg,#c084fc,#8b5cf6);}
+    .cell.c6.filled::after{ background:linear-gradient(180deg,#22d3ee,#0891b2);}
+    .cell.preview-ok{ outline:2px solid rgba(52,211,153,.75); transform:scale(1.02); }
+    .cell.preview-bad{ outline:2px solid rgba(251,113,133,.75); transform:scale(.98); }
+    .cell.clearing{ animation: popOut .28s ease forwards; }
+    @keyframes popOut{
+      0%{transform:scale(1); opacity:1}
+      60%{transform:scale(1.15)}
+      100%{transform:scale(.1); opacity:0}
+    }
+    .trayHead{
+      display:flex;justify-content:space-between;align-items:center;gap:8px;
+      margin-bottom:10px;font-weight:700;
+    }
+    .hint{ font-size:12px; color:var(--muted); font-weight:500; }
+    .pieces{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .pieceCard{
+      min-height:108px;border-radius:18px;padding:10px;
+      background:linear-gradient(180deg, #293264, #212854);
+      border:2px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;
+      transition:transform .12s ease, border-color .12s ease, opacity .18s ease, box-shadow .12s ease;
+      position:relative;overflow:hidden;cursor:grab;user-select:none;
+    }
+    .pieceCard.selected{
+      transform:translateY(-2px) scale(1.02);
+      border-color:rgba(125,211,252,.9);
+      box-shadow:0 0 0 3px rgba(125,211,252,.12);
+    }
+    .pieceCard.used{ opacity:.25; filter:saturate(.5); pointer-events:none; }
+    .pieceCard.dragging{ opacity:.15; }
+    .miniGrid{display:grid;grid-template-columns:repeat(5,16px);grid-template-rows:repeat(5,16px);gap:4px}
+    .miniCell{width:16px;height:16px;border-radius:5px;background:transparent}
+    .miniCell.on{box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 5px 12px rgba(0,0,0,.22);}
+    .pieceCard[data-color="1"] .miniCell.on, .ghost[data-color="1"] .ghostCell.on{ background:linear-gradient(180deg,#60a5fa,#2563eb);}
+    .pieceCard[data-color="2"] .miniCell.on, .ghost[data-color="2"] .ghostCell.on{ background:linear-gradient(180deg,#f472b6,#db2777);}
+    .pieceCard[data-color="3"] .miniCell.on, .ghost[data-color="3"] .ghostCell.on{ background:linear-gradient(180deg,#fbbf24,#f59e0b);}
+    .pieceCard[data-color="4"] .miniCell.on, .ghost[data-color="4"] .ghostCell.on{ background:linear-gradient(180deg,#4ade80,#16a34a);}
+    .pieceCard[data-color="5"] .miniCell.on, .ghost[data-color="5"] .ghostCell.on{ background:linear-gradient(180deg,#c084fc,#8b5cf6);}
+    .pieceCard[data-color="6"] .miniCell.on, .ghost[data-color="6"] .ghostCell.on{ background:linear-gradient(180deg,#22d3ee,#0891b2);}
+    .controls{display:flex;gap:10px;flex-wrap:wrap}
+    button{
+      appearance:none;border:none;cursor:pointer;background:linear-gradient(180deg, #7c87ff, #5b66ea);
+      color:white;font-weight:800;border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);flex:1;min-width:120px
+    }
+    button.secondary{background:linear-gradient(180deg, #3b467f, #2b335f);}
+    .message{display:none;min-height:24px;text-align:center;font-size:13px;color:var(--muted);margin-top:6px}
+    .overlay{
+      position:fixed;inset:0;background:rgba(5,8,20,.62);display:none;align-items:center;justify-content:center;padding:20px;z-index:30
+    }
+    .overlay.show{ display:flex; }
+    .dialog{
+      width:min(100%,360px);background:linear-gradient(180deg, #2a3364, #1d2448);
+      border:1px solid rgba(255,255,255,.10);border-radius:24px;padding:22px;text-align:center;box-shadow:var(--shadow);
+    }
+    .dialog h2{margin:0 0 8px;font-size:28px}
+    .dialog p{margin:6px 0 0;color:var(--muted)}
+    .dialog .big{font-size:34px;font-weight:900;margin-top:10px}
+    .ghost{
+      position:fixed;left:0;top:0;pointer-events:none;z-index:20;
+      display:grid;grid-template-columns:repeat(5,18px);grid-template-rows:repeat(5,18px);gap:4px;
+      transform:translate(-9999px,-9999px) scale(1.05);
+      filter:drop-shadow(0 10px 20px rgba(0,0,0,.35));
+    }
+    .ghostCell{width:18px;height:18px;border-radius:6px;background:transparent;opacity:.95}
+    .ghostCell.on{box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 5px 12px rgba(0,0,0,.22);}
+    .ghost.invalid .ghostCell.on{ background:linear-gradient(180deg,#fb7185,#e11d48)!important; opacity:.85; }
+    @media (max-width:430px){
+      .pieces{gap:8px}
+      .pieceCard{min-height:94px}
+      .miniGrid{grid-template-columns:repeat(5,13px);grid-template-rows:repeat(5,13px);gap:3px}
+      .miniCell{width:13px;height:13px;border-radius:4px}
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .stat .value{font-size:19px}
+      .controls button{min-width:0}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="titleRow" style="display:none;"></div>
+      <div class="stats">
+        <div class="stat"><div class="label">SCORE</div><div class="value" id="score">0</div></div>
+        <div class="stat"><div class="label">BEST</div><div class="value" id="best">0</div></div>
+        <div class="stat"><div class="label">COMBO</div><div class="value" id="combo">0</div></div>
+
+      </div>
+    </div>
+
+    <div class="gameWrap">
+      <div id="board" class="board" aria-label="game board"></div>
+      <div class="message" id="message">ピースをドラッグして盤面へ</div>
+    </div>
+
+    <div class="trayPanel">
+      <div class="trayHead">
+        <div>PIECES</div>
+        <div class="hint">ドラッグ or タップ選択でもOK</div>
+      </div>
+      <div id="pieces" class="pieces"></div>
+      <div style="height:10px"></div>
+      <div class="controls">
+        <button class="secondary" id="audioBtn">効果音+BGM ON/OFF</button>
+        <button class="secondary" id="bgmBtn">BGM 再生/停止</button>
+        <button class="secondary" id="resetBtn">リセット</button>
+        <button id="newSetBtn">ピース更新</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay">
+    <div class="dialog">
+      <h2>GAME OVER</h2>
+      <p>これ以上置ける場所がありません</p>
+      <div class="big" id="finalScore">0</div>
+      <p>タップでやり直し</p>
+    </div>
+  </div>
+
+  <div id="ghost" class="ghost" aria-hidden="true"></div>
+  <audio id="bgm" src="blockpop_bgm_loop.mp3" loop preload="auto"></audio>
+
+  <script>
+    const SIZE = 8;
+    const BEST_KEY = 'block-pop-best-v3';
+    const AUDIO_KEY = 'block-pop-audio-v1';
+    const BGM_ON_KEY = 'block-pop-bgm-on-v1';
+    const BGM_VOL = 0.35;
+
+    const boardEl = document.getElementById('board');
+    const piecesEl = document.getElementById('pieces');
+    const messageEl = document.getElementById('message');
+    const scoreEl = document.getElementById('score');
+    const bestEl = document.getElementById('best');
+    const comboEl = document.getElementById('combo');
+    const overlayEl = document.getElementById('overlay');
+    const finalScoreEl = document.getElementById('finalScore');
+    const resetBtn = document.getElementById('resetBtn');
+    const newSetBtn = document.getElementById('newSetBtn');
+    const audioBtn = document.getElementById('audioBtn');
+    const bgmBtn = document.getElementById('bgmBtn');
+    const ghostEl = document.getElementById('ghost');
+    const bgm = document.getElementById('bgm');
+
+    const SHAPES = [
+      [[0,0]], [[0,0],[1,0]], [[0,0],[0,1]],
+      [[0,0],[1,0],[2,0]], [[0,0],[0,1],[0,2]],
+      [[0,0],[1,0],[1,1]], [[0,0],[0,1],[1,1]],
+      [[0,0],[1,0],[0,1],[1,1]],
+      [[0,0],[1,0],[2,0],[1,1]],
+      [[0,0],[1,0],[2,0],[0,1]], [[0,0],[1,0],[2,0],[2,1]],
+      [[0,0],[0,1],[0,2],[1,2]], [[1,0],[1,1],[1,2],[0,2]],
+      [[0,0],[1,0],[1,1],[2,1]], [[1,0],[2,0],[0,1],[1,1]],
+      [[0,0],[1,0],[2,0],[1,1],[1,2]],
+      [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]],
+      [[0,0],[1,0],[0,1],[1,1],[0,2],[1,2]],
+      [[0,0],[1,0],[2,0],[0,1],[1,1]],
+      [[0,0],[1,0],[2,0],[1,1],[2,1]]
+    ];
+
+    let board = [];
+    let pieces = [];
+    let selectedPiece = null;
+    let score = 0;
+    let combo = 0;
+    let best = Number(localStorage.getItem(BEST_KEY) || 0);
+    let audioEnabled = localStorage.getItem(AUDIO_KEY) !== '0';
+    let bgmWanted = localStorage.getItem(BGM_ON_KEY) === null ? true : localStorage.getItem(BGM_ON_KEY) !== '0';
+    let lastPreview = [];
+    let dragState = null;
+    let audioCtx = null;
+    let hasTriedAutoStartBgm = false;
+
+    bgm.volume = BGM_VOL;
+
+    function initAudio(){
+      if(audioCtx) return audioCtx;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if(!AudioCtx) return null;
+      audioCtx = new AudioCtx();
+      return audioCtx;
+    }
+
+    function beep(freq=440, duration=0.08, type='square', gainValue=0.12, delay=0){
+      if(!audioEnabled) return;
+      const ctx = initAudio();
+      if(!ctx) return;
+      const t = ctx.currentTime + delay;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(gainValue, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + duration + 0.02);
+    }
+
+    function soundPlace(){ beep(520,0.06,'square',0.12); beep(660,0.05,'square',0.08,0.03); }
+    function soundClear(){ beep(700,0.07,'triangle',0.13); beep(920,0.08,'triangle',0.13,0.05); beep(1180,0.09,'triangle',0.10,0.10); }
+    function soundBad(){ beep(180,0.08,'sawtooth',0.10); }
+    function soundPick(){ beep(440,0.04,'square',0.09); }
+    function soundGameOver(){ beep(320,0.08,'triangle',0.10); beep(250,0.10,'triangle',0.10,0.07); beep(180,0.12,'triangle',0.10,0.16); }
+
+    async function tryStartBgm(){
+      if(!audioEnabled || !bgmWanted) return;
+      try{
+        initAudio()?.resume?.();
+        bgm.volume = BGM_VOL;
+        await bgm.play();
+      }catch(e){}
+    }
+
+    function stopBgm(){
+      bgm.pause();
+      bgm.currentTime = 0;
+    }
+
+    function updateAudioUI(){
+      bgmBtn.textContent = bgm.paused ? 'BGM 再生' : 'BGM 停止';
+    }
+
+    function rand(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+    function normalizeShape(shape){
+      const minX = Math.min(...shape.map(c=>c[0]));
+      const minY = Math.min(...shape.map(c=>c[1]));
+      return shape.map(([x,y])=>[x-minX,y-minY]);
+    }
+
+    function rotateShape(shape){
+      return normalizeShape(shape.map(([x,y]) => [y, -x]));
+    }
+
+    function randomShape(){
+      let shape = JSON.parse(JSON.stringify(SHAPES[rand(0, SHAPES.length-1)]));
+      const turns = rand(0,3);
+      for(let i=0;i<turns;i++) shape = rotateShape(shape);
+      return normalizeShape(shape);
+    }
+
+    function newBoard(){
+      board = Array.from({length: SIZE}, () => Array(SIZE).fill(0));
+    }
+
+    function getBounds(shape){
+      const xs = shape.map(c=>c[0]), ys = shape.map(c=>c[1]);
+      return {
+        minX: Math.min(...xs), minY: Math.min(...ys),
+        maxX: Math.max(...xs), maxY: Math.max(...ys),
+        w: Math.max(...xs)-Math.min(...xs)+1,
+        h: Math.max(...ys)-Math.min(...ys)+1
+      };
+    }
+
+    function createPieces(forcePlayable=false){
+      let tries = 0;
+      do{
+        pieces = Array.from({length:3}, (_,i)=>({
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()),
+          shape: randomShape(),
+          used: false,
+          color: (i % 6) + 1
+        }));
+        tries++;
+        if(!forcePlayable || hasAnyMoveWithPieces()) break;
+      } while(tries < 60);
+      renderPieces();
+    }
+
+    function renderBoard(){
+      boardEl.innerHTML = '';
+      for(let y=0;y<SIZE;y++){
+        for(let x=0;x<SIZE;x++){
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.dataset.x = x;
+          cell.dataset.y = y;
+          if(board[y][x]) cell.classList.add('filled','c'+board[y][x]);
+          cell.addEventListener('click', ()=>handleBoardTap(x,y));
+          cell.addEventListener('pointerenter', ()=>handleBoardPreview(x,y));
+          cell.addEventListener('pointerdown', ()=>handleBoardPreview(x,y));
+          boardEl.appendChild(cell);
+        }
+      }
+      updateStats();
+    }
+
+    function renderPieces(){
+      piecesEl.innerHTML = '';
+      pieces.forEach(piece=>{
+        const card = document.createElement('div');
+        card.className = 'pieceCard';
+        card.dataset.id = piece.id;
+        card.dataset.color = piece.color;
+        if(piece.used) card.classList.add('used');
+        if(selectedPiece && selectedPiece.id === piece.id) card.classList.add('selected');
+
+        const grid = document.createElement('div');
+        grid.className = 'miniGrid';
+
+        const bounds = getBounds(piece.shape);
+        const offsetX = Math.floor((5 - bounds.w)/2) - bounds.minX;
+        const offsetY = Math.floor((5 - bounds.h)/2) - bounds.minY;
+        const onSet = new Set(piece.shape.map(([x,y]) => `${x+offsetX},${y+offsetY}`));
+
+        for(let gy=0; gy<5; gy++){
+          for(let gx=0; gx<5; gx++){
+            const c = document.createElement('div');
+            c.className = 'miniCell' + (onSet.has(`${gx},${gy}`) ? ' on' : '');
+            grid.appendChild(c);
+          }
+        }
+        card.appendChild(grid);
+
+        card.addEventListener('click', ()=>{
+          if(dragState || piece.used) return;
+          selectedPiece = (selectedPiece && selectedPiece.id === piece.id) ? null : piece;
+          renderPieces();
+          clearPreview();
+          if(selectedPiece){
+            soundPick();
+            messageEl.textContent = '盤面をタップした場所ごとに、緑 / 赤で表示します';
+          } else {
+            messageEl.textContent = 'ピースの選択を解除しました';
+          }
+        });
+
+        card.addEventListener('pointerdown', (e)=>startDrag(e, piece, card));
+
+        piecesEl.appendChild(card);
+      });
+    }
+
+    function updateStats(){
+      scoreEl.textContent = score;
+      bestEl.textContent = best;
+      comboEl.textContent = combo;
+      updateAudioUI();
+    }
+
+    function updateBest(){
+      if(score > best){
+        best = score;
+        localStorage.setItem(BEST_KEY, String(best));
+      }
+    }
+
+    function canPlace(shape, startX, startY){
+      for(const [dx,dy] of shape){
+        const x = startX + dx, y = startY + dy;
+        if(x < 0 || y < 0 || x >= SIZE || y >= SIZE) return false;
+        if(board[y][x] !== 0) return false;
+      }
+      return true;
+    }
+
+    function place(shape, startX, startY, color){
+      for(const [dx,dy] of shape){
+        board[startY+dy][startX+dx] = color;
+      }
+    }
+
+    function findClears(){
+      const rows = [], cols = [];
+      for(let y=0;y<SIZE;y++) if(board[y].every(v=>v!==0)) rows.push(y);
+      for(let x=0;x<SIZE;x++){
+        let full = true;
+        for(let y=0;y<SIZE;y++) if(board[y][x] === 0) { full = false; break; }
+        if(full) cols.push(x);
+      }
+      return {rows, cols};
+    }
+
+    function clearLines(rows, cols){
+      const clearSet = new Set();
+      rows.forEach(y => { for(let x=0;x<SIZE;x++) clearSet.add(`${x},${y}`); });
+      cols.forEach(x => { for(let y=0;y<SIZE;y++) clearSet.add(`${x},${y}`); });
+
+      [...clearSet].forEach(key=>{
+        const [x,y] = key.split(',').map(Number);
+        const idx = y * SIZE + x;
+        const el = boardEl.children[idx];
+        if(el) el.classList.add('clearing');
+      });
+
+      setTimeout(()=>{
+        clearSet.forEach(key=>{
+          const [x,y] = key.split(',').map(Number);
+          board[y][x] = 0;
+        });
+        renderBoard();
+      }, 180);
+
+      return clearSet.size;
+    }
+
+    function clearPreview(){
+      lastPreview.forEach(el => el.classList.remove('preview-ok','preview-bad'));
+      lastPreview = [];
+    }
+
+    function previewAt(x,y, pieceOverride=null){
+      clearPreview();
+      const piece = pieceOverride || selectedPiece;
+      if(!piece) return false;
+      const ok = canPlace(piece.shape, x, y);
+      for(const [dx,dy] of piece.shape){
+        const tx = x+dx, ty = y+dy;
+        if(tx < 0 || ty < 0 || tx >= SIZE || ty >= SIZE) continue;
+        const idx = ty * SIZE + tx;
+        const cell = boardEl.children[idx];
+        if(cell){
+          cell.classList.add(ok ? 'preview-ok' : 'preview-bad');
+          lastPreview.push(cell);
+        }
+      }
+      return ok;
+    }
+
+    function handleBoardPreview(x, y){
+      if(!selectedPiece || dragState) return;
+      const ok = previewAt(x, y, selectedPiece);
+      messageEl.textContent = ok ? 'ここに置けます' : 'ここには置けません';
+    }
+
+    function handleBoardTap(x,y){
+      if(!selectedPiece){
+        messageEl.textContent = '先に下のピースを選ぶか、ドラッグしてください';
+        return;
+      }
+      tryPlaceSelectedAt(x,y);
+    }
+
+    function tryPlaceSelectedAt(x, y){
+      if(!selectedPiece) return false;
+      return placePieceFlow(selectedPiece, x, y);
+    }
+
+    function placePieceFlow(piece, x, y){
+      if(piece.used) return false;
+      if(!canPlace(piece.shape, x, y)){
+        messageEl.textContent = 'そこには置けません';
+        soundBad();
+        return false;
+      }
+
+      place(piece.shape, x, y, piece.color);
+      score += piece.shape.length * 5;
+      piece.used = true;
+      selectedPiece = null;
+      clearPreview();
+      soundPlace();
+
+      const {rows, cols} = findClears();
+      if(rows.length || cols.length){
+        combo += 1;
+        const cleared = clearLines(rows, cols);
+        score += cleared * 10 + combo * 15;
+        messageEl.textContent = `${rows.length + cols.length}ライン消去！`;
+        soundClear();
+      }else{
+        combo = 0;
+        renderBoard();
+        messageEl.textContent = 'ナイス配置';
+      }
+
+      if(pieces.every(p => p.used)){
+        createPieces(true);
+      }else{
+        renderPieces();
+      }
+
+      updateBest();
+      updateStats();
+
+      setTimeout(()=>{
+        if(!hasAnyMoveWithPieces()) gameOver();
+      }, 220);
+
+      return true;
+    }
+
+    function hasAnyMoveWithPieces(){
+      const active = pieces.filter(p => !p.used);
+      if(active.length === 0) return true;
+      for(const piece of active){
+        for(let y=0;y<SIZE;y++){
+          for(let x=0;x<SIZE;x++){
+            if(canPlace(piece.shape, x, y)) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function boardPosFromPointer(clientX, clientY){
+      const rect = boardEl.getBoundingClientRect();
+      if(clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom){
+        return null;
+      }
+      const cellW = rect.width / SIZE;
+      const cellH = rect.height / SIZE;
+      const x = Math.floor((clientX - rect.left) / cellW);
+      const y = Math.floor((clientY - rect.top) / cellH);
+      return {x: Math.max(0, Math.min(SIZE-1, x)), y: Math.max(0, Math.min(SIZE-1, y))};
+    }
+
+    function renderGhost(piece){
+      ghostEl.innerHTML = '';
+      ghostEl.dataset.color = piece.color;
+      const bounds = getBounds(piece.shape);
+      const offsetX = Math.floor((5 - bounds.w)/2) - bounds.minX;
+      const offsetY = Math.floor((5 - bounds.h)/2) - bounds.minY;
+      const onSet = new Set(piece.shape.map(([x,y]) => `${x+offsetX},${y+offsetY}`));
+      for(let gy=0; gy<5; gy++){
+        for(let gx=0; gx<5; gx++){
+          const c = document.createElement('div');
+          c.className = 'ghostCell' + (onSet.has(`${gx},${gy}`) ? ' on' : '');
+          ghostEl.appendChild(c);
+        }
+      }
+    }
+
+    function moveGhost(clientX, clientY){
+      ghostEl.style.transform = `translate(${clientX - ghostEl.offsetWidth/2}px, ${clientY - ghostEl.offsetHeight/2}px) scale(1.05)`;
+    }
+
+    function startDrag(e, piece, card){
+      if(piece.used) return;
+      initAudio()?.resume?.();
+      if(audioEnabled && bgmWanted && bgm.paused) tryStartBgm();
+      e.preventDefault();
+      dragState = { piece, card, pointerId: e.pointerId, lastCell: null, valid: false };
+      selectedPiece = piece;
+      renderPieces();
+      card.classList.add('dragging');
+      renderGhost(piece);
+      moveGhost(e.clientX, e.clientY);
+      ghostEl.style.display = 'grid';
+      ghostEl.classList.remove('invalid');
+      soundPick();
+
+      try{ card.setPointerCapture(e.pointerId); } catch {}
+      window.addEventListener('pointermove', onDragMove, {passive:false});
+      window.addEventListener('pointerup', onDragEnd, {passive:false});
+      window.addEventListener('pointercancel', onDragEnd, {passive:false});
+      messageEl.textContent = 'そのまま盤面へドラッグ';
+    }
+
+    function onDragMove(e){
+      if(!dragState || e.pointerId !== dragState.pointerId) return;
+      e.preventDefault();
+      moveGhost(e.clientX, e.clientY);
+
+      const pos = boardPosFromPointer(e.clientX, e.clientY);
+      if(!pos){
+        clearPreview();
+        dragState.lastCell = null;
+        dragState.valid = false;
+        ghostEl.classList.add('invalid');
+        return;
+      }
+
+      if(!dragState.lastCell || dragState.lastCell.x !== pos.x || dragState.lastCell.y !== pos.y){
+        const ok = previewAt(pos.x, pos.y, dragState.piece);
+        dragState.lastCell = pos;
+        dragState.valid = ok;
+        ghostEl.classList.toggle('invalid', !ok);
+      }
+    }
+
+    function finishDragCleanup(){
+      if(!dragState) return;
+      dragState.card?.classList.remove('dragging');
+      ghostEl.style.transform = 'translate(-9999px,-9999px)';
+      ghostEl.style.display = 'none';
+      clearPreview();
+      window.removeEventListener('pointermove', onDragMove);
+      window.removeEventListener('pointerup', onDragEnd);
+      window.removeEventListener('pointercancel', onDragEnd);
+      dragState = null;
+    }
+
+    function onDragEnd(e){
+      if(!dragState || e.pointerId !== dragState.pointerId) return;
+      e.preventDefault();
+      const piece = dragState.piece;
+      const pos = boardPosFromPointer(e.clientX, e.clientY);
+      const canDrop = pos && canPlace(piece.shape, pos.x, pos.y);
+
+      finishDragCleanup();
+
+      if(canDrop){
+        placePieceFlow(piece, pos.x, pos.y);
+      }else{
+        selectedPiece = piece.used ? null : piece;
+        renderPieces();
+        if(pos) {
+          soundBad();
+          messageEl.textContent = 'そこには置けません';
+        } else {
+          messageEl.textContent = 'ドラッグをキャンセルしました';
+        }
+      }
+    }
+
+    function gameOver(){
+      updateBest();
+      updateStats();
+      finalScoreEl.textContent = score;
+      overlayEl.classList.add('show');
+      soundGameOver();
+    }
+
+    function resetGame(){
+      overlayEl.classList.remove('show');
+      score = 0;
+      combo = 0;
+      selectedPiece = null;
+      finishDragCleanup();
+      newBoard();
+      createPieces(true);
+      renderBoard();
+      renderPieces();
+      messageEl.textContent = 'ピースをドラッグして盤面へ';
+      updateStats();
+      if(audioEnabled && bgmWanted){
+        tryStartBgm();
+      }
+    }
+
+    audioBtn.addEventListener('click', async ()=>{
+      audioEnabled = !audioEnabled;
+      localStorage.setItem(AUDIO_KEY, audioEnabled ? '1' : '0');
+      if(audioEnabled){
+        initAudio()?.resume?.();
+        soundPick();
+        if(bgmWanted) await tryStartBgm();
+      }else{
+        bgm.pause();
+      }
+      updateStats();
+    });
+
+    bgmBtn.addEventListener('click', async ()=>{
+      bgmWanted = !bgmWanted;
+      localStorage.setItem(BGM_ON_KEY, bgmWanted ? '1' : '0');
+      if(bgmWanted && audioEnabled){
+        await tryStartBgm();
+      }else{
+        bgm.pause();
+      }
+      updateStats();
+    });
+
+    resetBtn.addEventListener('click', resetGame);
+    overlayEl.addEventListener('click', resetGame);
+
+    newSetBtn.addEventListener('click', ()=>{
+      if(score > 0) score = Math.max(0, score - 30);
+      combo = 0;
+      selectedPiece = null;
+      createPieces(true);
+      renderPieces();
+      updateBest();
+      updateStats();
+      messageEl.textContent = 'ピースを入れ替えました';
+      if(!hasAnyMoveWithPieces()) createPieces(true);
+    });
+
+    document.addEventListener('pointerdown', async (e)=>{
+      initAudio()?.resume?.();
+      if(!hasTriedAutoStartBgm){
+        hasTriedAutoStartBgm = true;
+        await tryStartBgm();
+        updateStats();
+      }
+      if(selectedPiece && !dragState && !boardEl.contains(e.target) && !piecesEl.contains(e.target)){
+        clearPreview();
+      }
+    }, {once:false});
+
+    bgm.addEventListener('play', updateAudioUI);
+    bgm.addEventListener('pause', updateAudioUI);
+
+    window.addEventListener('load', async ()=>{
+      if(audioEnabled && bgmWanted){
+        await tryStartBgm();
+        updateStats();
+      }
+    });
+
+    resetGame();
+  </script>
+</body>
+</html>
