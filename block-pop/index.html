@@ -39,7 +39,7 @@
     .titleRow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
     .title{font-weight:900;letter-spacing:.02em;font-size:clamp(24px,5vw,34px);text-shadow:0 2px 10px rgba(0,0,0,.25)}
     .subtitle{font-size:12px;color:var(--muted)}
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
     .stat{
       background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
       border:1px solid rgba(255,255,255,.08);
@@ -146,17 +146,12 @@
 <body>
   <div class="app">
     <div class="topbar">
-      <div class="titleRow">
-        <div>
-          <div class="title">Block Pop</div>
-          <div class="subtitle">ドラッグ・効果音・BGM対応 完全版</div>
-        </div>
-      </div>
+      <div class="titleRow" style="display:none;"></div>
       <div class="stats">
         <div class="stat"><div class="label">SCORE</div><div class="value" id="score">0</div></div>
         <div class="stat"><div class="label">BEST</div><div class="value" id="best">0</div></div>
         <div class="stat"><div class="label">COMBO</div><div class="value" id="combo">0</div></div>
-        <div class="stat"><div class="label">AUDIO</div><div class="value" id="audioLabel">ON</div></div>
+
       </div>
     </div>
 
@@ -206,7 +201,6 @@
     const scoreEl = document.getElementById('score');
     const bestEl = document.getElementById('best');
     const comboEl = document.getElementById('combo');
-    const audioLabelEl = document.getElementById('audioLabel');
     const overlayEl = document.getElementById('overlay');
     const finalScoreEl = document.getElementById('finalScore');
     const resetBtn = document.getElementById('resetBtn');
@@ -239,7 +233,7 @@
     let combo = 0;
     let best = Number(localStorage.getItem(BEST_KEY) || 0);
     let audioEnabled = localStorage.getItem(AUDIO_KEY) !== '0';
-    let bgmWanted = localStorage.getItem(BGM_ON_KEY) !== '0';
+    let bgmWanted = localStorage.getItem(BGM_ON_KEY) === null ? true : localStorage.getItem(BGM_ON_KEY) !== '0';
     let lastPreview = [];
     let dragState = null;
     let audioCtx = null;
@@ -293,7 +287,6 @@
     }
 
     function updateAudioUI(){
-      audioLabelEl.textContent = audioEnabled ? 'ON' : 'OFF';
       bgmBtn.textContent = bgm.paused ? 'BGM 再生' : 'BGM 停止';
     }
 
@@ -356,6 +349,7 @@
           if(board[y][x]) cell.classList.add('filled','c'+board[y][x]);
           cell.addEventListener('click', ()=>handleBoardTap(x,y));
           cell.addEventListener('pointerenter', ()=>handleBoardPreview(x,y));
+          cell.addEventListener('pointerdown', ()=>handleBoardPreview(x,y));
           boardEl.appendChild(cell);
         }
       }
@@ -396,7 +390,7 @@
           clearPreview();
           if(selectedPiece){
             soundPick();
-            messageEl.textContent = '盤面をタップすると、場所ごとに緑 / 赤で表示します';
+            messageEl.textContent = '盤面をタップした場所ごとに、緑 / 赤で表示します';
           } else {
             messageEl.textContent = 'ピースの選択を解除しました';
           }
@@ -496,10 +490,8 @@
 
     function handleBoardPreview(x, y){
       if(!selectedPiece || dragState) return;
-      previewAt(x, y, selectedPiece);
-      messageEl.textContent = canPlace(selectedPiece.shape, x, y)
-        ? 'ここに置けます'
-        : 'ここには置けません';
+      const ok = previewAt(x, y, selectedPiece);
+      messageEl.textContent = ok ? 'ここに置けます' : 'ここには置けません';
     }
 
     function handleBoardTap(x,y){
@@ -761,6 +753,13 @@
 
     bgm.addEventListener('play', updateAudioUI);
     bgm.addEventListener('pause', updateAudioUI);
+
+    window.addEventListener('load', async ()=>{
+      if(audioEnabled && bgmWanted){
+        await tryStartBgm();
+        updateStats();
+      }
+    });
 
     resetGame();
   </script>
