@@ -582,17 +582,29 @@
       return false;
     }
 
-    function boardPosFromPointer(clientX, clientY){
-      const rect = boardEl.getBoundingClientRect();
-      if(clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom){
-        return null;
-      }
-      const cellW = rect.width / SIZE;
-      const cellH = rect.height / SIZE;
-      const x = Math.floor((clientX - rect.left) / cellW);
-      const y = Math.floor((clientY - rect.top) / cellH);
-      return {x: Math.max(0, Math.min(SIZE-1, x)), y: Math.max(0, Math.min(SIZE-1, y))};
-    }
+ function boardPosFromPointer(clientX, clientY){
+
+  const rect = boardEl.getBoundingClientRect();
+
+  if(clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom){
+    return null;
+  }
+
+  const cellW = rect.width / SIZE;
+  const cellH = rect.height / SIZE;
+
+  // ピース中央補正
+  const offsetX = cellW / 2;
+  const offsetY = cellH / 2;
+
+  const x = Math.floor((clientX - rect.left - offsetX) / cellW);
+  const y = Math.floor((clientY - rect.top - offsetY) / cellH);
+
+  return {
+    x: Math.max(0, Math.min(SIZE-1, x)),
+    y: Math.max(0, Math.min(SIZE-1, y))
+  };
+}
 
     function renderGhost(piece){
       ghostEl.innerHTML = '';
