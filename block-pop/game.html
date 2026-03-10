@@ -282,7 +282,7 @@
       return audioCtx;
     }
 
-    function beep(freq=440, duration=0.08, type='square', gainValue=0.12, delay=0){
+    function beep(freq=440, duration=0.08, type='square', gainValue=0.2, delay=0){
       if(!audioEnabled) return;
       const ctx = initAudio();
       if(!ctx) return;
