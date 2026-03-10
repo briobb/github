@@ -111,7 +111,6 @@
       color:white;font-weight:800;border-radius:14px;padding:12px 16px;box-shadow:var(--shadow);flex:1;min-width:120px
     }
     button.secondary{background:linear-gradient(180deg, #3b467f, #2b335f);}
-    .message{min-height:24px;text-align:center;font-size:13px;color:var(--muted);margin-top:6px}
     .overlay{
       position:fixed;inset:0;background:rgba(5,8,20,.62);display:none;align-items:center;justify-content:center;padding:20px;z-index:30
     }
@@ -132,6 +131,7 @@
     .ghostCell{width:18px;height:18px;border-radius:6px;background:transparent;opacity:.95}
     .ghostCell.on{box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 5px 12px rgba(0,0,0,.22);}
     .ghost.invalid .ghostCell.on{ background:linear-gradient(180deg,#fb7185,#e11d48)!important; opacity:.85; }
+
     @media (max-width:430px){
       .pieces{gap:8px}
       .pieceCard{min-height:94px}
@@ -151,13 +151,11 @@
         <div class="stat"><div class="label">SCORE</div><div class="value" id="score">0</div></div>
         <div class="stat"><div class="label">BEST</div><div class="value" id="best">0</div></div>
         <div class="stat"><div class="label">COMBO</div><div class="value" id="combo">0</div></div>
-
       </div>
     </div>
 
     <div class="gameWrap">
       <div id="board" class="board" aria-label="game board"></div>
-      <div class="message" id="message">ピースをドラッグして盤面へ</div>
     </div>
 
     <div class="trayPanel">
@@ -197,7 +195,6 @@
 
     const boardEl = document.getElementById('board');
     const piecesEl = document.getElementById('pieces');
-    const messageEl = document.getElementById('message');
     const scoreEl = document.getElementById('score');
     const bestEl = document.getElementById('best');
     const comboEl = document.getElementById('combo');
@@ -390,9 +387,6 @@
           clearPreview();
           if(selectedPiece){
             soundPick();
-            messageEl.textContent = '盤面をタップした場所ごとに、緑 / 赤で表示します';
-          } else {
-            messageEl.textContent = 'ピースの選択を解除しました';
           }
         });
 
@@ -490,15 +484,11 @@
 
     function handleBoardPreview(x, y){
       if(!selectedPiece || dragState) return;
-      const ok = previewAt(x, y, selectedPiece);
-      messageEl.textContent = ok ? 'ここに置けます' : 'ここには置けません';
+      previewAt(x, y, selectedPiece);
     }
 
     function handleBoardTap(x,y){
-      if(!selectedPiece){
-        messageEl.textContent = '先に下のピースを選ぶか、ドラッグしてください';
-        return;
-      }
+      if(!selectedPiece) return;
       tryPlaceSelectedAt(x,y);
     }
 
@@ -510,7 +500,6 @@
     function placePieceFlow(piece, x, y){
       if(piece.used) return false;
       if(!canPlace(piece.shape, x, y)){
-        messageEl.textContent = 'そこには置けません';
         soundBad();
         return false;
       }
@@ -527,12 +516,10 @@
         combo += 1;
         const cleared = clearLines(rows, cols);
         score += cleared * 10 + combo * 15;
-        messageEl.textContent = `${rows.length + cols.length}ライン消去！`;
         soundClear();
       }else{
         combo = 0;
         renderBoard();
-        messageEl.textContent = 'ナイス配置';
       }
 
       if(pieces.every(p => p.used)){
@@ -615,7 +602,6 @@
       window.addEventListener('pointermove', onDragMove, {passive:false});
       window.addEventListener('pointerup', onDragEnd, {passive:false});
       window.addEventListener('pointercancel', onDragEnd, {passive:false});
-      messageEl.textContent = 'そのまま盤面へドラッグ';
     }
 
     function onDragMove(e){
@@ -668,9 +654,6 @@
         renderPieces();
         if(pos) {
           soundBad();
-          messageEl.textContent = 'そこには置けません';
-        } else {
-          messageEl.textContent = 'ドラッグをキャンセルしました';
         }
       }
     }
@@ -693,7 +676,6 @@
       createPieces(true);
       renderBoard();
       renderPieces();
-      messageEl.textContent = 'ピースをドラッグして盤面へ';
       updateStats();
       if(audioEnabled && bgmWanted){
         tryStartBgm();
@@ -735,7 +717,6 @@
       renderPieces();
       updateBest();
       updateStats();
-      messageEl.textContent = 'ピースを入れ替えました';
       if(!hasAnyMoveWithPieces()) createPieces(true);
     });
 
