@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Pomeranian Scroll Action</title>
   <style>
     :root {
@@ -19,7 +19,9 @@
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
       user-select: none;
+      -webkit-touch-callout: none;
     }
 
     html, body {
@@ -29,6 +31,10 @@
       overflow: hidden;
       font-family: Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
       background: linear-gradient(180deg, var(--bg1), var(--bg2));
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      overscroll-behavior: none;
     }
 
     body {
@@ -49,6 +55,9 @@
       box-shadow: var(--shadow);
       border: 1px solid rgba(255, 255, 255, 0.4);
       touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
     }
 
     canvas {
@@ -57,6 +66,10 @@
       width: 100%;
       height: 100%;
       display: block;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
     }
 
     #hud {
@@ -91,7 +104,7 @@
     }
 
     .score-box {
-      min-width: 112px;
+      min-width: 85px;
     }
 
     .score-label {
@@ -211,7 +224,7 @@
       }
 
       .score-box {
-        min-width: 96px;
+        min-width: 85px;
       }
 
       .score-value {
@@ -240,10 +253,10 @@
 
     <div id="overlay">
       <div class="overlay-card">
-        <h1>Pomeranian Flight</h1>
-        <p>画面を<span class="highlight">押している間だけ上昇</span>します。</p>
-        <p>障害物を避けながら進むとスコアが伸びます。</p>
-        <p>PCはクリック長押し、スマホ・タブレットはタッチ長押しで操作できます。</p>
+        <h1>ぽっちゃんとお散歩</h1>
+        <p>画面を<span class="highlight">押している間だけ上昇</span>するよ！</p>
+        <p>障害物を避けながら進むとスコアが伸びる！</p>
+        <p>PCはクリック長押し、スマホ・タブレットはタッチ長押しで操作できるよ。</p>
         <button id="start-btn" type="button">ゲームスタート</button>
       </div>
     </div>
@@ -272,7 +285,7 @@
       baseLift: 1550,
       maxLift: 2850,
       maxHoldBoostTime: 0.22,
-      releaseDropBoost: 120, 
+      releaseDropBoost: 120,
       maxRiseSpeed: -780,
       maxFallSpeed: 980,
       obstacleGapMin: 210,
@@ -345,7 +358,11 @@
       gameOver = true;
       highScore = Math.max(highScore, Math.floor(score));
       updateScoreUI();
-      showOverlay('Game Over', `今回のスコア: <span class="highlight">${Math.floor(score)}</span><br>もう一度挑戦できます。`, 'リスタート');
+      showOverlay(
+        'Game Over',
+        `今回のスコア: <span class="highlight">${Math.floor(score)}</span><br>もう一度挑戦！`,
+        'リスタート'
+      );
     }
 
     function showOverlay(title, message, buttonText) {
@@ -353,7 +370,7 @@
         <div class="overlay-card">
           <h1>${title}</h1>
           <p>${message}</p>
-          <p>画面を押している間だけ上昇します。</p>
+          <p>画面を押している間だけ上昇するよ。</p>
           <button id="start-btn" type="button">${buttonText}</button>
         </div>
       `;
@@ -412,7 +429,7 @@
       bgOffset = (bgOffset + WORLD.scrollSpeed * 0.18 * dt) % WORLD.width;
       cloudOffset = (cloudOffset + WORLD.scrollSpeed * 0.32 * dt) % WORLD.width;
 
-            if (pressActive && !prevPressActive) {
+      if (pressActive && !prevPressActive) {
         player.velocityY = WORLD.tapImpulse;
         holdTime = 0;
       }
@@ -705,16 +722,38 @@
     function bindControls() {
       const shell = document.getElementById('game-shell');
 
+      const blockDefault = (e) => {
+        e.preventDefault();
+      };
+
+      shell.addEventListener('touchstart', blockDefault, { passive: false });
+      shell.addEventListener('touchmove', blockDefault, { passive: false });
+      shell.addEventListener('touchend', blockDefault, { passive: false });
+
       shell.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
         if (e.target === soundBtn || e.target === startBtn) return;
         setPressState(true);
-      });
+      }, { passive: false });
+
+      shell.addEventListener('pointermove', (e) => {
+        if (pressActive) e.preventDefault();
+      }, { passive: false });
 
       window.addEventListener('pointerup', () => setPressState(false));
       window.addEventListener('pointercancel', () => setPressState(false));
       window.addEventListener('blur', () => setPressState(false));
 
       shell.addEventListener('contextmenu', (e) => e.preventDefault());
+      canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      document.addEventListener('contextmenu', (e) => {
+        if (shell.contains(e.target)) e.preventDefault();
+      });
+
+      document.addEventListener('selectstart', (e) => {
+        if (shell.contains(e.target)) e.preventDefault();
+      });
     }
 
     soundBtn.addEventListener('click', toggleSound);
