@@ -324,6 +324,101 @@
     let holdTime = 0;
     let prevPressActive = false;
 
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    function unlockAudio() {
+      if (!soundEnabled) return;
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+    }
+
+    function playJumpSound() {
+      if (!soundEnabled) return;
+
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(420, now);
+      osc.frequency.exponentialRampToValueAtTime(760, now + 0.22);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.18, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.50);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.52);
+    }
+
+    function playCrashSound() {
+      if (!soundEnabled) return;
+
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      const bufferSize = Math.floor(ctx.sampleRate * 0.55);
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      for (let i = 0; i < bufferSize; i++) {
+        const t = i / bufferSize;
+        const fade = Math.pow(1 - t, 1.8);
+        data[i] = (Math.random() * 2 - 1) * fade * 0.9;
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(3200, now);
+      filter.frequency.exponentialRampToValueAtTime(700, now + 0.22);
+      filter.Q.value = 1.2;
+
+      const rumbleOsc = ctx.createOscillator();
+      rumbleOsc.type = 'sawtooth';
+      rumbleOsc.frequency.setValueAtTime(220, now);
+      rumbleOsc.frequency.exponentialRampToValueAtTime(120, now + 0.20);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.0001, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.8, now + 0.012);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.52);
+
+      const rumbleGain = ctx.createGain();
+      rumbleGain.gain.setValueAtTime(0.0001, now);
+      rumbleGain.gain.exponentialRampToValueAtTime(0.12, now + 0.01);
+      rumbleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+
+      rumbleOsc.connect(rumbleGain);
+      rumbleGain.connect(ctx.destination);
+
+      noise.start(now);
+      noise.stop(now + 0.55);
+
+      rumbleOsc.start(now);
+      rumbleOsc.stop(now + 0.75);
+    }
+
     function resetGame() {
       player.y = 640;
       player.velocityY = 0;
@@ -347,6 +442,7 @@
     }
 
     function startGame() {
+      unlockAudio();
       resetGame();
       gameStarted = true;
       overlay.classList.add('hidden');
@@ -399,6 +495,10 @@
       soundEnabled = !soundEnabled;
       soundBtn.textContent = soundEnabled ? 'SOUND ON' : 'SOUND OFF';
 
+      if (soundEnabled) {
+        unlockAudio();
+      }
+
       if (soundEnabled && gameStarted && !gameOver) {
         tryPlayBgm();
       } else {
@@ -443,6 +543,7 @@
       if (pressActive && !prevPressActive) {
         player.velocityY = WORLD.tapImpulse;
         holdTime = 0;
+        playJumpSound();
       }
 
       if (pressActive) {
@@ -471,7 +572,9 @@
       if (player.y + player.h / 2 >= WORLD.groundY) {
         player.y = WORLD.groundY - player.h / 2;
         burst(player.x + player.w * 0.35, player.y + player.h * 0.3, 16);
+        playCrashSound();
         endGame();
+        return;
       }
 
       if (obstacleTimer >= WORLD.obstacleInterval) {
@@ -501,6 +604,7 @@
       for (const obstacle of obstacles) {
         if (rectHit(getPlayerRect(), obstacle.top) || rectHit(getPlayerRect(), obstacle.bottom)) {
           burst(player.x + player.w * 0.5, player.y + player.h * 0.5, 18);
+          playCrashSound();
           endGame();
           break;
         }
@@ -727,6 +831,9 @@
 
     function setPressState(isPressed) {
       pressActive = isPressed;
+      if (isPressed) {
+        unlockAudio();
+      }
       if (isPressed && soundEnabled && gameStarted && !gameOver && bgm.paused) {
         tryPlayBgm();
       }
