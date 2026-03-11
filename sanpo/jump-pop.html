@@ -406,6 +406,11 @@
       }
     }
 
+    function getScrollMultiplier() {
+      const cycleProgress = (score % 10000) / 10000;
+      return 1 + cycleProgress * 0.2;
+    }
+
     function spawnObstacle() {
       const width = randomRange(90, 140);
       const gapCenter = randomRange(300, WORLD.groundY - 300);
@@ -428,8 +433,12 @@
 
       elapsed += dt;
       obstacleTimer += dt;
-      bgOffset = (bgOffset + WORLD.scrollSpeed * 0.18 * dt) % WORLD.width;
-      cloudOffset = (cloudOffset + WORLD.scrollSpeed * 0.32 * dt) % WORLD.width;
+
+      const speedMultiplier = getScrollMultiplier();
+      const currentScrollSpeed = WORLD.scrollSpeed * speedMultiplier;
+
+      bgOffset = (bgOffset + currentScrollSpeed * 0.18 * dt) % WORLD.width;
+      cloudOffset = (cloudOffset + currentScrollSpeed * 0.32 * dt) % WORLD.width;
 
       if (pressActive && !prevPressActive) {
         player.velocityY = WORLD.tapImpulse;
@@ -471,7 +480,7 @@
       }
 
       obstacles.forEach((obstacle) => {
-        obstacle.x -= WORLD.scrollSpeed * dt;
+        obstacle.x -= currentScrollSpeed * dt;
         obstacle.top.x = obstacle.x;
         obstacle.bottom.x = obstacle.x;
 
