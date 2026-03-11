@@ -272,7 +272,6 @@
     const highScoreEl = document.getElementById('high-score');
     const soundBtn = document.getElementById('sound-btn');
     const overlay = document.getElementById('overlay');
-    const startBtn = document.getElementById('start-btn');
     const bgm = document.getElementById('bgm');
 
     const WORLD = {
@@ -375,7 +374,9 @@
         </div>
       `;
       overlay.classList.remove('hidden');
-      overlay.querySelector('#start-btn').addEventListener('click', startGame, { once: true });
+
+      const newStartBtn = overlay.querySelector('#start-btn');
+      newStartBtn.addEventListener('click', startGame, { once: true });
     }
 
     function tryPlayBgm() {
@@ -397,6 +398,7 @@
     function toggleSound() {
       soundEnabled = !soundEnabled;
       soundBtn.textContent = soundEnabled ? 'SOUND ON' : 'SOUND OFF';
+
       if (soundEnabled && gameStarted && !gameOver) {
         tryPlayBgm();
       } else {
@@ -572,6 +574,7 @@
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.fillStyle = '#ffffff';
+
       for (let i = 0; i < 5; i++) {
         const cx = x + i * 140;
         ctx.beginPath();
@@ -581,6 +584,7 @@
         ctx.closePath();
         ctx.fill();
       }
+
       ctx.restore();
     }
 
@@ -722,17 +726,31 @@
     function bindControls() {
       const shell = document.getElementById('game-shell');
 
-      const blockDefault = (e) => {
-        e.preventDefault();
+      const isUiButton = (target) => {
+        return !!(target && (
+          target.closest('#sound-btn') ||
+          target.closest('#start-btn')
+        ));
       };
 
-      shell.addEventListener('touchstart', blockDefault, { passive: false });
-      shell.addEventListener('touchmove', blockDefault, { passive: false });
-      shell.addEventListener('touchend', blockDefault, { passive: false });
+      shell.addEventListener('touchstart', (e) => {
+        if (isUiButton(e.target)) return;
+        e.preventDefault();
+      }, { passive: false });
+
+      shell.addEventListener('touchmove', (e) => {
+        if (isUiButton(e.target)) return;
+        e.preventDefault();
+      }, { passive: false });
+
+      shell.addEventListener('touchend', (e) => {
+        if (isUiButton(e.target)) return;
+        e.preventDefault();
+      }, { passive: false });
 
       shell.addEventListener('pointerdown', (e) => {
+        if (isUiButton(e.target)) return;
         e.preventDefault();
-        if (e.target === soundBtn || e.target === startBtn) return;
         setPressState(true);
       }, { passive: false });
 
@@ -757,7 +775,9 @@
     }
 
     soundBtn.addEventListener('click', toggleSound);
-    startBtn.addEventListener('click', startGame, { once: true });
+
+    const initialStartBtn = document.getElementById('start-btn');
+    initialStartBtn.addEventListener('click', startGame, { once: true });
 
     function clamp(v, min, max) {
       return Math.max(min, Math.min(max, v));
