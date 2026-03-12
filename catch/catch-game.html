@@ -252,7 +252,7 @@
       <div class="overlay-card">
         <h1>ぽっちゃんキャッチ</h1>
         <p>押している間は<span class="highlight">右へ移動</span>、離すと<span class="highlight">左へ戻る</span>よ。</p>
-        <p>骨・ハンバーガーで得点アップ☺️</del></p>
+        <p>骨・ハンバーガーで得点アップ☺️</p>
         <p>とうがらしをキャッチすると-1000点😭</p>
         <p>BRIOを落とす、または<br>レンガに触れるとゲームオーバー！</p>
         <button id="start-btn" type="button">ゲームスタート</button>
@@ -283,17 +283,16 @@
       spawnInterval: 0.62,
       maxDelta: 0.033,
       itemFallBase: 330,
-      itemFallMaxBonus: 190,
       goldenCoinChance: 0.16,
       brickChance: 0.12,
     };
 
     const ITEM_TYPES = {
-      bone: { score: 50, mustCatch: false, deadly: false },
-      burger: { score: 100, mustCatch: false, deadly: false },
-      chili: { score: -1000, mustCatch: false, deadly: false },
-      coin: { score: 250, mustCatch: true, deadly: false },
-      brick: { score: 0, mustCatch: false, deadly: true },
+      bone:   { score: 50,   mustCatch: false, deadly: false },
+      burger: { score: 100,  mustCatch: false, deadly: false },
+      chili:  { score: -1000,mustCatch: false, deadly: false },
+      coin:   { score: 250,  mustCatch: true,  deadly: false },
+      brick:  { score: 0,    mustCatch: false, deadly: true  },
     };
 
     const playerImg = new Image();
@@ -349,50 +348,180 @@
       }
     }
 
-    function playCatchSound() {
+    function playJumpSound() {
       if (!soundEnabled) return;
+
       const ctx = getAudioContext();
       const now = ctx.currentTime;
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(520, now);
-      osc.frequency.exponentialRampToValueAtTime(920, now + 0.12);
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(420, now);
+      osc.frequency.exponentialRampToValueAtTime(760, now + 0.22);
+
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.14, now + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+      gain.gain.exponentialRampToValueAtTime(0.14, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.50);
+
       osc.connect(gain);
       gain.connect(ctx.destination);
+
       osc.start(now);
-      osc.stop(now + 0.17);
+      osc.stop(now + 0.52);
     }
+
+    function playItemCatchSound(type) {
+      if (!soundEnabled) return;
+
+      const ctx = getAudioContext();
+      const now = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(2600, now);
+      filter.Q.value = 0.8;
+
+      osc.type = 'triangle';
+
+      if (type === 'burger') {
+        osc.frequency.setValueAtTime(620, now);
+        osc.frequency.exponentialRampToValueAtTime(980, now + 0.10);
+      } else if (type === 'chili') {
+        osc.frequency.setValueAtTime(700, now);
+        osc.frequency.exponentialRampToValueAtTime(520, now + 0.10);
+      } else {
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.10);
+      }
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.28, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.18);
+    }
+
+    function playCoinCatchSound() {
+  if (!soundEnabled) return;
+
+  const ctx = getAudioContext();
+  const now = ctx.currentTime;
+
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const osc3 = ctx.createOscillator();
+
+  const gain1 = ctx.createGain();
+  const gain2 = ctx.createGain();
+  const gain3 = ctx.createGain();
+
+  osc1.type = 'triangle';
+  osc2.type = 'sine';
+  osc3.type = 'sine';
+
+  // メインのキラーン音
+  osc1.frequency.setValueAtTime(1046, now); // C6
+  osc1.frequency.exponentialRampToValueAtTime(1568, now + 0.16); // G6
+
+  // 上に重ねるきらめき
+  osc2.frequency.setValueAtTime(1318, now + 0.03); // E6
+  osc2.frequency.exponentialRampToValueAtTime(2093, now + 0.18); // C7
+
+  // 最後のキラッ
+  osc3.frequency.setValueAtTime(2093, now + 0.10); // C7
+  osc3.frequency.exponentialRampToValueAtTime(2637, now + 0.22); // E7
+
+  gain1.gain.setValueAtTime(0.0001, now);
+  gain1.gain.exponentialRampToValueAtTime(0.28, now + 0.015);
+  gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.24);
+
+  gain2.gain.setValueAtTime(0.0001, now + 0.02);
+  gain2.gain.exponentialRampToValueAtTime(0.21, now + 0.05);
+  gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+  gain3.gain.setValueAtTime(0.0001, now + 0.09);
+  gain3.gain.exponentialRampToValueAtTime(0.18, now + 0.12);
+  gain3.gain.exponentialRampToValueAtTime(0.0001, now + 0.26);
+
+  osc1.connect(gain1);
+  osc2.connect(gain2);
+  osc3.connect(gain3);
+
+  gain1.connect(ctx.destination);
+  gain2.connect(ctx.destination);
+  gain3.connect(ctx.destination);
+
+  osc1.start(now);
+  osc2.start(now + 0.02);
+  osc3.start(now + 0.09);
+
+  osc1.stop(now + 0.25);
+  osc2.stop(now + 0.24);
+  osc3.stop(now + 0.27);
+}
 
     function playCrashSound() {
       if (!soundEnabled) return;
+
       const ctx = getAudioContext();
       const now = ctx.currentTime;
-      const bufferSize = Math.floor(ctx.sampleRate * 0.45);
+
+      const bufferSize = Math.floor(ctx.sampleRate * 0.55);
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
+
       for (let i = 0; i < bufferSize; i++) {
         const t = i / bufferSize;
-        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 1.5) * 0.9;
+        const fade = Math.pow(1 - t, 1.8);
+        data[i] = (Math.random() * 2 - 1) * fade * 0.9;
       }
+
       const noise = ctx.createBufferSource();
       noise.buffer = buffer;
+
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(3000, now);
-      filter.frequency.exponentialRampToValueAtTime(650, now + 0.3);
-      const gain = ctx.createGain();
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.38, now + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+      filter.frequency.setValueAtTime(3200, now);
+      filter.frequency.exponentialRampToValueAtTime(700, now + 0.22);
+      filter.Q.value = 1.2;
+
+      const rumbleOsc = ctx.createOscillator();
+      rumbleOsc.type = 'sawtooth';
+      rumbleOsc.frequency.setValueAtTime(220, now);
+      rumbleOsc.frequency.exponentialRampToValueAtTime(120, now + 0.20);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.0001, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.8, now + 0.012);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.52);
+
+      const rumbleGain = ctx.createGain();
+      rumbleGain.gain.setValueAtTime(0.0001, now);
+      rumbleGain.gain.exponentialRampToValueAtTime(0.12, now + 0.01);
+      rumbleGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+
       noise.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+
+      rumbleOsc.connect(rumbleGain);
+      rumbleGain.connect(ctx.destination);
+
       noise.start(now);
-      noise.stop(now + 0.45);
+      noise.stop(now + 0.55);
+
+      rumbleOsc.start(now);
+      rumbleOsc.stop(now + 0.75);
     }
 
     function resetGame() {
@@ -404,6 +533,7 @@
       bgOffset = 0;
       cloudOffset = 0;
       gameOver = false;
+      pressActive = false;
       updateScoreUI();
     }
 
@@ -471,6 +601,7 @@
     function spawnItem() {
       let type = randomBaseItemType();
       const specialRoll = Math.random();
+
       if (specialRoll < WORLD.goldenCoinChance) {
         type = 'coin';
       } else if (specialRoll < WORLD.goldenCoinChance + WORLD.brickChance) {
@@ -481,7 +612,8 @@
       const size = sizeMap[type] || 80;
       const padding = 36;
       const x = randomRange(padding, WORLD.width - padding - size);
-      const fallBonus = Math.floor(score / 30);
+
+      const fallBonus = Math.floor(score / 40);
 
       items.push({
         type,
@@ -534,8 +666,20 @@
           score = Math.max(0, score + ITEM_TYPES[item.type].score);
           highScore = Math.max(highScore, Math.floor(score));
           updateScoreUI();
-          burst(item.x + item.w / 2, item.y + item.h / 2, item.type === 'coin' ? 18 : 12, item.type === 'coin' ? '#ffe07a' : '#ffffff');
-          playCatchSound();
+
+          burst(
+            item.x + item.w / 2,
+            item.y + item.h / 2,
+            item.type === 'coin' ? 18 : 12,
+            item.type === 'coin' ? '#ffe07a' : '#ffffff'
+          );
+
+          if (item.type === 'coin') {
+            playCoinCatchSound();
+          } else {
+            playItemCatchSound(item.type);
+          }
+
           items.splice(i, 1);
           continue;
         }
@@ -780,8 +924,15 @@
     }
 
     function setPressState(isPressed) {
+      const wasPressed = pressActive;
       pressActive = isPressed;
+
       if (isPressed) unlockAudio();
+
+      if (isPressed && !wasPressed && soundEnabled && gameStarted && !gameOver) {
+        playJumpSound();
+      }
+
       if (isPressed && soundEnabled && gameStarted && !gameOver && bgm.paused) {
         tryPlayBgm();
       }
