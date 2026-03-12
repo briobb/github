@@ -157,21 +157,20 @@
       .stats{grid-template-columns:repeat(2,1fr)}
       .stat .value{font-size:19px}
       .controls button{min-width:0}
-   
     }
     #newSetBtn{
-  display:none;
-}
-#audioBtn,
-#bgmBtn,
-#resetBtn,
-#newSetBtn{
-  display:none;
-}
+      display:none;
+    }
+    #audioBtn,
+    #bgmBtn,
+    #resetBtn,
+    #newSetBtn{
+      display:none;
+    }
 
-.stats{
-  grid-template-columns:repeat(3,1fr);
-}
+    .stats{
+      grid-template-columns:repeat(3,1fr);
+    }
 
   </style>
 </head>
@@ -269,6 +268,7 @@
     let bgmWanted = localStorage.getItem(BGM_ON_KEY) === null ? true : localStorage.getItem(BGM_ON_KEY) !== '0';
     let lastPreview = [];
     let dragState = null;
+    let dragVisualStart = null;
     let audioCtx = null;
     let hasTriedAutoStartBgm = false;
 
@@ -582,29 +582,29 @@
       return false;
     }
 
- function boardPosFromPointer(clientX, clientY){
+    function boardPosFromPointer(clientX, clientY){
 
-  const rect = boardEl.getBoundingClientRect();
+      const rect = boardEl.getBoundingClientRect();
 
-  if(clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom){
-    return null;
-  }
+      if(clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom){
+        return null;
+      }
 
-  const cellW = rect.width / SIZE;
-  const cellH = rect.height / SIZE;
+      const cellW = rect.width / SIZE;
+      const cellH = rect.height / SIZE;
 
-  // ピース中央補正
-  const offsetX = cellW / 2;
-  const offsetY = cellH / 2;
+      // ピース中央補正
+      const offsetX = cellW / 2;
+      const offsetY = cellH / 2;
 
-  const x = Math.floor((clientX - rect.left - offsetX) / cellW);
-  const y = Math.floor((clientY - rect.top - offsetY) / cellH);
+      const x = Math.floor((clientX - rect.left - offsetX) / cellW);
+      const y = Math.floor((clientY - rect.top - offsetY) / cellH);
 
-  return {
-    x: Math.max(0, Math.min(SIZE-1, x)),
-    y: Math.max(0, Math.min(SIZE-1, y))
-  };
-}
+      return {
+        x: Math.max(0, Math.min(SIZE-1, x)),
+        y: Math.max(0, Math.min(SIZE-1, y))
+      };
+    }
 
     function renderGhost(piece){
       ghostEl.innerHTML = '';
@@ -622,8 +622,25 @@
       }
     }
 
+    function getLeveragedPointer(clientX, clientY){
+      if(!dragVisualStart){
+        return { x: clientX, y: clientY };
+      }
+
+      const dx = clientX - dragVisualStart.x;
+      const dy = clientY - dragVisualStart.y;
+
+      return {
+        x: dragVisualStart.x + dx,
+        y: dragVisualStart.y + dy * 1.6 - 60
+      };
+    }
+
     function moveGhost(clientX, clientY){
-      ghostEl.style.transform = `translate(${clientX - ghostEl.offsetWidth/2}px, ${clientY - ghostEl.offsetHeight/2}px) scale(1.05)`;
+      const p = getLeveragedPointer(clientX, clientY);
+
+      ghostEl.style.transform =
+        `translate(${p.x - ghostEl.offsetWidth/2}px, ${p.y - ghostEl.offsetHeight/2}px) scale(1.05)`;
     }
 
     function startDrag(e, piece, card){
@@ -632,6 +649,7 @@
       if(audioEnabled && bgmWanted && bgm.paused) tryStartBgm();
       e.preventDefault();
       dragState = { piece, card, pointerId: e.pointerId, lastCell: null, valid: false };
+      dragVisualStart = { x: e.clientX, y: e.clientY };
       selectedPiece = piece;
       renderPieces();
       card.classList.add('dragging');
@@ -652,7 +670,9 @@
       e.preventDefault();
       moveGhost(e.clientX, e.clientY);
 
-      const pos = boardPosFromPointer(e.clientX, e.clientY);
+      const p = getLeveragedPointer(e.clientX, e.clientY);
+      const pos = boardPosFromPointer(p.x, p.y);
+
       if(!pos){
         clearPreview();
         dragState.lastCell = null;
@@ -679,13 +699,15 @@
       window.removeEventListener('pointerup', onDragEnd);
       window.removeEventListener('pointercancel', onDragEnd);
       dragState = null;
+      dragVisualStart = null;
     }
 
     function onDragEnd(e){
       if(!dragState || e.pointerId !== dragState.pointerId) return;
       e.preventDefault();
       const piece = dragState.piece;
-      const pos = boardPosFromPointer(e.clientX, e.clientY);
+      const p = getLeveragedPointer(e.clientX, e.clientY);
+      const pos = boardPosFromPointer(p.x, p.y);
       const canDrop = pos && canPlace(piece.shape, pos.x, pos.y);
 
       finishDragCleanup();
