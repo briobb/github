@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>BGM Player</title>
+
+<style>
+
+body{
+    margin:0;
+    background:white;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    min-height:100vh;
+}
+
+.container{
+    display:flex;
+    flex-direction:column;
+    gap:30px;
+}
+
+.bgm-button{
+    width:220px;
+    cursor:pointer;
+    transition:transform 0.15s;
+}
+
+.bgm-button:active{
+    transform:scale(0.95);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <img class="bgm-button"
+         id="btn1"
+         src="button1.png"
+         alt="BGM1">
+
+    <img class="bgm-button"
+         id="btn2"
+         src="button2.png"
+         alt="BGM2">
+
+    <img class="bgm-button"
+         id="btn3"
+         src="button3.png"
+         alt="BGM3">
+
+</div>
+
+
+<audio id="audio1" src="bgm1.mp3" loop></audio>
+<audio id="audio2" src="bgm2.mp3" loop></audio>
+<audio id="audio3" src="bgm3.mp3" loop></audio>
+
+
+<script>
+
+const audios = [
+    document.getElementById("audio1"),
+    document.getElementById("audio2"),
+    document.getElementById("audio3")
+];
+
+async function playAudio(index){
+
+    audios.forEach((audio, i) => {
+
+        if(i !== index){
+            audio.pause();
+            audio.currentTime = 0;
+        }
+
+    });
+
+    const target = audios[index];
+
+    if(target.paused){
+        await target.play();
+    }else{
+        target.pause();
+    }
+
+}
+
+
+document.getElementById("btn1").addEventListener("click", () => {
+    playAudio(0);
+});
+
+document.getElementById("btn2").addEventListener("click", () => {
+    playAudio(1);
+});
+
+document.getElementById("btn3").addEventListener("click", () => {
+    playAudio(2);
+});
+
+</script>
+
+</body>
+</html>
