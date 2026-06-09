@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ぽっちゃんレスキュー</title>
+<title>ぽっちゃんがレスキュー</title>
 
 <style>
 * {
@@ -28,7 +28,6 @@ body {
   width: 100vw;
   max-width: 430px;
   height: 100vh;
-
   background-color: #98e878;
   background-image:
     linear-gradient(45deg, rgba(95,150,68,0.35) 25%, transparent 25%),
@@ -36,12 +35,7 @@ body {
     linear-gradient(45deg, transparent 75%, rgba(120,85,45,0.28) 75%),
     linear-gradient(-45deg, transparent 75%, rgba(70,130,60,0.28) 75%);
   background-size: 36px 36px;
-  background-position:
-    0 0,
-    0 18px,
-    18px -18px,
-    -18px 0px;
-
+  background-position: 0 0, 0 18px, 18px -18px, -18px 0px;
   position: relative;
   overflow: hidden;
   border-left: 4px solid #111;
@@ -81,11 +75,7 @@ body {
     linear-gradient(45deg, transparent 75%, rgba(120,85,45,0.28) 75%),
     linear-gradient(-45deg, transparent 75%, rgba(70,130,60,0.28) 75%);
   background-size: 36px 36px;
-  background-position:
-    0 0,
-    0 18px,
-    18px -18px,
-    -18px 0px;
+  background-position: 0 0, 0 18px, 18px -18px, -18px 0px;
 }
 
 .car,
@@ -121,17 +111,9 @@ body {
   transition: top 0.12s linear;
 }
 
-.item {
-  z-index: 4;
-}
-
-.dog {
-  z-index: 3;
-}
-
-#player {
-  z-index: 10;
-}
+.item { z-index: 4; }
+.dog { z-index: 3; }
+#player { z-index: 10; }
 
 #ufo {
   position: absolute;
@@ -229,10 +211,10 @@ body {
   <div id="message">
     <div>
       <div class="titleDog" style="font-size:70px; margin-bottom:10px;">🐶</div>
-      <div class="titleText">ぽっちゃんレスキュー</div>
+      <div class="titleText">ぽっちゃんがレスキュー</div>
 
       <div class="smallText">
-        迷子のワンコを助けながら<br>
+        困っているワンコを助けながら<br>
         危険な道路を進もう！<br><br>
         スマホ<br>
         左右タップ：移動<br>
@@ -264,7 +246,6 @@ const laneH = 72;
 
 let playerCol = 2;
 let playerRow = 7;
-
 let score = 0;
 let rescue = 0;
 let running = false;
@@ -317,7 +298,6 @@ function playStepSound() {
 
   const ctx = getAudioContext();
   const now = ctx.currentTime;
-
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
@@ -365,7 +345,6 @@ function playCrashSound() {
 
   const ctx = getAudioContext();
   const now = ctx.currentTime;
-
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
 
@@ -393,12 +372,10 @@ function startUfoSound() {
 
   ufoOsc.type = "sawtooth";
   ufoOsc.frequency.value = 180;
-
   ufoGain.gain.value = 0.055;
 
   ufoOsc.connect(ufoGain);
   ufoGain.connect(ctx.destination);
-
   ufoOsc.start();
 
   let high = false;
@@ -422,10 +399,7 @@ function stopUfoSound() {
   }
 
   if (ufoOsc) {
-    try {
-      ufoOsc.stop();
-    } catch(e) {}
-
+    try { ufoOsc.stop(); } catch(e) {}
     ufoOsc.disconnect();
     ufoOsc = null;
   }
@@ -590,7 +564,6 @@ function getColX(col) {
 function updatePlayer() {
   player.style.left = getColX(playerCol) + "px";
   player.style.top = playerRow * laneH + 10 + "px";
-
   updateFollowers();
 }
 
@@ -600,12 +573,9 @@ function updateFollowers() {
   for (let i = 0; i < followers.length; i++) {
     const f = document.createElement("div");
     f.className = "dog follower";
-
     f.innerHTML = `<img src="${followers[i].file}" alt="${followers[i].name}">`;
-
     f.style.left = getColX(playerCol) + "px";
     f.style.top = (playerRow + i + 1) * laneH + 10 + "px";
-
     game.appendChild(f);
   }
 }
@@ -665,11 +635,9 @@ function moveForward() {
   lanes = lanes.filter(lane => {
     if (lane.row > getLaneCount()) {
       lane.el.remove();
-
       lane.cars.forEach(car => car.el.remove());
       lane.items.forEach(item => item.remove());
       lane.dogs.forEach(dog => dog.remove());
-
       return false;
     }
 
@@ -773,7 +741,6 @@ function warnUfo() {
 
   setTimeout(() => {
     if (!running) return;
-
     warning.style.display = "none";
     spawnUfo();
   }, 1000);
@@ -892,9 +859,7 @@ function gameOver() {
 
   message.innerHTML = `
     <div>
-      <div style="font-size:70px;">
-        😢
-      </div>
+      <div style="font-size:70px;">😢</div>
 
       <div class="titleText" style="margin-top:10px;">
         GAME OVER
@@ -983,7 +948,9 @@ game.addEventListener("touchend", e => {
   }
 });
 
-game.addEventListener("click", e => {
+game.addEventListener("mousedown", e => {
+  if ("ontouchstart" in window) return;
+
   if (!running) {
     startGame();
     return;
