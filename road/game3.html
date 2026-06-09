@@ -113,7 +113,8 @@ body {
 
 .item { z-index: 4; }
 .dog { z-index: 3; }
-#player { z-index: 10; }
+#player { z-index: 10; 
+          display: none;}
 
 #ufo {
   position: absolute;
@@ -228,7 +229,7 @@ body {
   </div>
 </div>
 
-<audio id="bgm" src="../bgm/bgm3.mp3" loop></audio>
+<audio id="bgm" src="..//bgm/bgm3.mp3" loop></audio>
 
 <script>
 const game = document.getElementById("game");
@@ -412,6 +413,7 @@ function stopUfoSound() {
 
 function startGame() {
   running = true;
+  player.style.display = "block";
   score = 0;
   rescue = 0;
   playerCol = 2;
