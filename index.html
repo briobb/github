@@ -159,7 +159,7 @@
   
 
   .hero{
-    min-height: calc(var(--vh, 1vh) * 90);
+    min-height: 90svh;
     display:flex;
     align-items:center;
     border-bottom:1px solid var(--border);
@@ -491,16 +491,6 @@
 </style>
 </head>
 
-<script>
-  function setVH(){
-    document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
-  }
-  setVH();
-
-  // iOS Safari 対策：向き変更・UI変化で再計算
-  window.addEventListener('resize', setVH);
-  window.addEventListener('orientationchange', setVH);
-</script>
 
 <body>
 <header>
