@@ -7,11 +7,12 @@
 
 <style>
   :root{
-    --border:#000;
-    --bg:#fff;
-    --fg:#000;
-    --max:1100px;
-  }
+  --border:#1a1a1a;
+  --bg:#fff;
+  --fg:#000;
+  --accent:#ccff00;
+  --max:1100px;
+}
 
   *{ box-sizing:border-box; }
 
@@ -27,14 +28,16 @@
 
   /* Header */
   header{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    background:var(--bg);
-    border-bottom:1px solid var(--border);
-    z-index:999;
-  }
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  background:#000;
+  color:#fff;
+  border-bottom:2px solid #D7FF00;
+  z-index:999;
+}
+
 
   .nav{
     max-width:var(--max);
@@ -152,6 +155,8 @@
     margin:0 auto;
     padding:0 18px;
   }
+
+  
 
   .hero{
     min-height: calc(var(--vh, 1vh) * 90);
@@ -457,8 +462,11 @@
   }
 
   footer{
-    padding:34px 0;
-  }
+  padding:34px 0;
+  background:#000;
+  color:#fff;
+  border-top:0px solid #D7FF00;
+}
 
   .small{
     font-size:12px;
@@ -582,7 +590,8 @@
     </div>
   </section>
 
- 
+  <!-- WORKS -->
+  
 
   <section id="works2">
   <div class="container">
