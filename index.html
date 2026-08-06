@@ -109,7 +109,7 @@
     right:-100%;
     width:min(360px, 80vw);
     height:100%;
-    background:var(--bg);
+    background:#f7fbff;
     border-left:1px solid var(--border);
     padding:22px;
     transition:0.25s;
@@ -124,7 +124,7 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
-    border-bottom:1px solid var(--border);
+    border-bottom:0;
     padding-bottom:12px;
     margin-bottom:6px;
   }
@@ -141,10 +141,22 @@
   .mobile-menu a{
     display:block;
     padding:12px 10px;
-    border:1px solid var(--border);
-    border-radius:14px;
+    border:0;
+    border-radius:0;
     text-decoration:none;
     font-weight:600;
+  }
+
+  .mobile-menu a:hover{
+    background:var(--sky);
+    color:var(--blue);
+  }
+
+  .mobile-top-link{
+    color:var(--navy);
+    font-size:13px;
+    letter-spacing:.12em;
+    font-weight:800 !important;
   }
 
   
@@ -649,7 +661,7 @@
 
 <aside class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
   <div class="close-row">
-    <a class="brand-logo" href="#top" onclick="closeMenu()" aria-label="PENTHOUSE PRINT FACTORY トップへ">PENTHOUSE PRINT FACTORY</a>
+    <a class="mobile-top-link" href="#top" onclick="closeMenu()">TOP</a>
     <button class="close-btn" type="button" aria-label="閉じる" onclick="closeMenu()">✕</button>
   </div>
   <a href="#about" onclick="closeMenu()">ABOUT</a>
