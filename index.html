@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PENTHOUSE PRINT FACTORY</title>
+<meta name="description" content="AI生成画像やスマホ写真から1枚でも作れる、オリジナルウェア・グッズのプリント制作サービス。">
 
 <style>
   :root{
@@ -15,6 +16,8 @@
 }
 
   *{ box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
 
   body{
     margin:0;
@@ -277,6 +280,7 @@
   section{
     padding:64px 0;
     border-bottom:1px solid var(--border);
+    scroll-margin-top:72px;
   }
 
   h2{
@@ -489,6 +493,134 @@
     .nav-links{ display:none; }
     .works-grid{ grid-template-columns: 1fr; }
   }
+
+  /* 2026 brand refresh */
+  :root{
+    --navy:#06265f;
+    --blue:#1758a6;
+    --sky:#eaf4ff;
+    --ice:#f6faff;
+    --border:#c5d8ed;
+    --bg:#fff;
+    --fg:#071d3e;
+  }
+
+  body{
+    background:linear-gradient(180deg, #fff 0%, var(--ice) 100%);
+    color:var(--fg);
+  }
+
+  header{
+    background:rgba(255,255,255,.96);
+    color:var(--navy);
+    border-bottom:1px solid var(--border);
+    box-shadow:0 8px 30px rgba(6,38,95,.08);
+    backdrop-filter:blur(12px);
+  }
+
+  .nav{ min-height:72px; padding:8px 18px; }
+
+  .brand-logo{
+    display:block;
+    width:230px;
+    height:54px;
+    background:url("images/img_logo.PNG") center 49% / 100% auto no-repeat;
+    overflow:hidden;
+    text-indent:-9999px;
+  }
+
+  .nav-links{ font-size:12px; font-weight:800; letter-spacing:.1em; }
+  .nav-links a{ padding:9px 10px; }
+  .nav-links a:hover{ color:var(--blue); background:var(--sky); outline:0; }
+  .menu-btn{ color:var(--navy); }
+
+  main{ padding-top:72px; }
+  section{ padding:84px 0; }
+
+  .hero{
+    min-height:calc(92svh - 72px);
+    margin-top:0;
+    background-position:center;
+  }
+  .hero::before{
+    background:linear-gradient(90deg, rgba(1,20,55,.9) 0%, rgba(3,31,73,.7) 48%, rgba(3,31,73,.18) 100%);
+  }
+  .hero-inner{ max-width:var(--max); }
+  .hero-copy{ max-width:680px; }
+  .kicker{
+    border:1px solid rgba(255,255,255,.6);
+    background:rgba(255,255,255,.12);
+    backdrop-filter:blur(8px);
+  }
+  h1{ font-size:clamp(42px, 6vw, 72px); letter-spacing:.035em; }
+  .hero-message{ font-size:clamp(19px, 2.4vw, 29px); font-weight:800; line-height:1.5; margin:18px 0 8px; }
+  .hero-message em{ color:#8fc8ff; font-style:normal; }
+  .lead{ font-size:15px; }
+  .btn{
+    border:1px solid #fff;
+    border-radius:6px;
+    padding:12px 20px;
+    transition:.2s ease;
+  }
+  .btn-primary{ background:#fff; color:var(--navy); }
+  .btn:hover{ transform:translateY(-2px); }
+
+  h2{ color:var(--navy); font-size:28px; letter-spacing:.12em; }
+  h2::after{ content:""; display:block; width:42px; height:3px; margin-top:8px; background:var(--blue); }
+  .sub{ color:#405675; }
+  .panel, .important, #works2 .works2-card{
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#fff;
+    box-shadow:0 12px 35px rgba(6,38,95,.07);
+  }
+  .panel, .important{ padding:24px; }
+  .panel h3, .important h3{ color:var(--navy); }
+  .tag{ border:0; border-radius:4px; background:var(--sky); color:var(--navy); font-weight:700; }
+
+  .ai-feature{
+    margin-top:18px;
+    padding:20px;
+    border-left:4px solid var(--blue);
+    background:linear-gradient(135deg, var(--sky), #fff);
+  }
+  .ai-feature strong{ display:block; color:var(--navy); font-size:18px; margin-bottom:5px; }
+
+  .campaign{ background:linear-gradient(135deg, #e6f2ff, #f9fcff); }
+  .campaign-wrap{ display:grid; grid-template-columns:minmax(0, 520px) 1fr; gap:50px; align-items:center; }
+  .campaign-image{ width:100%; display:block; border-radius:12px; box-shadow:0 22px 60px rgba(6,38,95,.18); }
+  .campaign-copy h2{ font-size:clamp(27px, 4vw, 44px); line-height:1.3; letter-spacing:.04em; }
+  .campaign-copy p{ color:#405675; }
+
+  #works2{ background:#fff; }
+  #works2 .works2-card{ transition:transform .2s ease, box-shadow .2s ease; }
+  #works2 .works2-card:hover{ transform:translateY(-4px); box-shadow:0 18px 40px rgba(6,38,95,.13); }
+  #works2 .works2-img{ border-bottom:0; }
+  #works2 .works2-body{ padding:18px; }
+  #works2 .works2-title{ color:var(--navy); font-size:16px; }
+
+  .btn2{
+    border:1px solid var(--navy);
+    color:#fff;
+    background:var(--navy);
+    border-radius:6px;
+    box-shadow:0 8px 20px rgba(6,38,95,.16);
+  }
+  .btn2:hover{ background:var(--blue); border-color:var(--blue); color:#fff; transform:translateY(-2px); }
+  footer{ background:var(--navy); }
+
+  @media(max-width:768px){
+    .brand-logo{ width:188px; height:48px; }
+    .nav{ min-height:64px; }
+    main{ padding-top:64px; }
+    section{ padding:60px 0; }
+    .hero{ min-height:calc(88svh - 64px); }
+    .hero::before{ background:linear-gradient(180deg, rgba(2,24,60,.45), rgba(2,24,60,.9)); }
+    .hero-message{ font-size:20px; }
+    .campaign-wrap{ grid-template-columns:1fr; gap:28px; }
+    .campaign-copy{ order:-1; }
+    .campaign-image{ max-width:520px; margin:0 auto; }
+  }
 </style>
 </head>
 
@@ -497,12 +629,12 @@
 <body>
 <header>
   <div class="nav">
-    <div class="logo">PENTHOUSE PRINT FACTORY</div>
+    <a class="brand-logo" href="#top" aria-label="PENTHOUSE PRINT FACTORY トップへ">PENTHOUSE PRINT FACTORY</a>
    
 
     <nav class="nav-links" aria-label="Primary">
       <a href="#about">ABOUT</a>
-      <a href="#works">WORKS</a>
+      <a href="#works2">WORKS</a>
       <a href="#flow">FLOW</a>
       <a href="https://line.me/R/ti/p/@829tswwj">LINE</a>
       <a href="#contact">CONTACT</a>
@@ -517,11 +649,11 @@
 
 <aside class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
   <div class="close-row">
-    <div class="logo" style="font-size:14px;">PENTHOUSE PRINT FACTORY</div>
+    <a class="brand-logo" href="#top" onclick="closeMenu()" aria-label="PENTHOUSE PRINT FACTORY トップへ">PENTHOUSE PRINT FACTORY</a>
     <button class="close-btn" type="button" aria-label="閉じる" onclick="closeMenu()">✕</button>
   </div>
   <a href="#about" onclick="closeMenu()">ABOUT</a>
-  <a href="#works" onclick="closeMenu()">WORKS</a>
+  <a href="#works2" onclick="closeMenu()">WORKS</a>
   <a href="#flow" onclick="closeMenu()">FLOW</a>
   <a href="https://line.me/R/ti/p/@829tswwj" onclick="closeMenu()">LINE</a>
   <a href="#contact" onclick="closeMenu()">CONTACT</a>
@@ -532,15 +664,18 @@
   <!-- HERO -->
   <section class="hero" id="top">
     <div class="container hero-inner">
+      <div class="hero-copy">
       <span class="kicker">PRINT / PATCH / SMALL LOT</span>
       <h1>PENTHOUSE<br>PRINT FACTORY</h1>
+      <p class="hero-message"><em>AIでつくったその一枚を、</em><br>きれいなプリントで形に。</p>
       <p class="lead">
-        小ロットから対応するプリント制作窓口。<br>
-        まずは仕様をフォームで送るだけ。<br>お見積り無料・お支払いは<strong>銀行振込（前払い）</strong>のみです。
+        AI生成画像・スマホ写真・JPEG・PNGから対応。<br>
+        Illustratorデータがなくても、1枚からご相談いただけます。
       </p>
       <div class="hero-cta">
-        <a class="btn" href="#works">制作事例を見る</a>
-        <a class="btn" href="#contact">見積もり依頼</a>
+        <a class="btn btn-primary" href="#contact">画像から見積もりを相談</a>
+        <a class="btn" href="#works2">制作事例を見る</a>
+      </div>
       </div>
     </div>
   </section>
@@ -581,7 +716,23 @@
           <p class="note" style="margin:12px 0 0 0;">
             まずは用途・枚数・色数・納期をご相談ください。<br>こちらから最適な仕様でご提案いたします。
           </p>
+          <div class="ai-feature">
+            <strong>AI生成画像からのプリントが得意です</strong>
+            JPEG・PNG・スマホで保存した画像でOK。Illustrator（ai）データがなくても、印刷に適したデータへ整えるところからご相談いただけます。
+          </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="campaign" aria-labelledby="campaign-title">
+    <div class="container campaign-wrap">
+      <img class="campaign-image" src="images/img_ad.PNG" alt="フルカラーTシャツプリント期間限定キャンペーン。10枚11,000円、スマホ写真対応">
+      <div class="campaign-copy">
+        <span class="kicker" style="color:var(--navy); border-color:var(--border); background:#fff;">FULL COLOR PRINT</span>
+        <h2 id="campaign-title">スマホの画像を送るだけ。<br>オリジナルTシャツに。</h2>
+        <p>AIで生成したイラストやお気に入りの写真も、フルカラーでプリントできます。データ制作の知識は必要ありません。</p>
+        <a class="btn2" href="https://line.me/R/ti/p/@829tswwj" target="_blank" rel="noopener">公式LINEで画像を送って相談</a>
       </div>
     </div>
   </section>
@@ -603,6 +754,7 @@
           <p class="works2-meta">参考価格：約4450円</p>
           <div class="tags">
               <span class="tag">シルクスクリーン</span><span class="tag">小ロット</span>
+          </div>
         </div>
       </article>
 
@@ -612,10 +764,10 @@
           <p class="works2-title">トートバッグ</p>
           <p class="works2-meta">仕様：昇華転写 / 1色</p>
           <p class="works2-meta">参考価格：約2000円</p>
-        </div>
-        <div class="tags">
+          <div class="tags">
               <span class="tag">昇華転写</span><span class="tag">フルカラーOK</span><span class="tag">1枚からOK</span>
-            </div>
+          </div>
+        </div>
       </article>
 
       <article class="works2-card">
@@ -624,10 +776,10 @@
           <p class="works2-title">ワッペンつきトートバッグ</p>
           <p class="works2-meta">仕様：昇華転写 / ワッペン</p>
           <p class="works2-meta">参考価格：約2000円</p>
-        </div>
-        <div class="tags">
+          <div class="tags">
               <span class="tag">昇華転写</span><span class="tag">ワッペン</span><span class="tag">フルカラーOK</span>
-            </div>
+          </div>
+        </div>
       </article>
 
       <article class="works2-card">
