@@ -122,7 +122,7 @@
 
   .mobile-menu .close-row{
     display:flex;
-    justify-content:space-between;
+    justify-content:flex-end;
     align-items:center;
     border-bottom:0;
     padding-bottom:12px;
@@ -661,9 +661,9 @@
 
 <aside class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
   <div class="close-row">
-    <a class="mobile-top-link" href="#top" onclick="closeMenu()">TOP</a>
     <button class="close-btn" type="button" aria-label="閉じる" onclick="closeMenu()">✕</button>
   </div>
+  <a class="mobile-top-link" href="#top" onclick="closeMenu()">TOP</a>
   <a href="#about" onclick="closeMenu()">ABOUT</a>
   <a href="#works2" onclick="closeMenu()">WORKS</a>
   <a href="#flow" onclick="closeMenu()">FLOW</a>
