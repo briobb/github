@@ -280,7 +280,7 @@
   section{
     padding:64px 0;
     border-bottom:1px solid var(--border);
-    scroll-margin-top:72px;
+    scroll-margin-top:84px;
   }
 
   h2{
@@ -511,20 +511,20 @@
   }
 
   header{
-    background:rgba(255,255,255,.96);
+    background:rgba(247,251,255,.97);
     color:var(--navy);
     border-bottom:1px solid var(--border);
     box-shadow:0 8px 30px rgba(6,38,95,.08);
     backdrop-filter:blur(12px);
   }
 
-  .nav{ min-height:72px; padding:8px 18px; }
+  .nav{ min-height:84px; padding:6px 18px; }
 
   .brand-logo{
     display:block;
-    width:230px;
-    height:54px;
-    background:url("images/img_logo.PNG") center 49% / 100% auto no-repeat;
+    width:260px;
+    height:70px;
+    background:url("images/img_logo.PNG") center 47% / 100% auto no-repeat;
     overflow:hidden;
     text-indent:-9999px;
   }
@@ -534,11 +534,11 @@
   .nav-links a:hover{ color:var(--blue); background:var(--sky); outline:0; }
   .menu-btn{ color:var(--navy); }
 
-  main{ padding-top:72px; }
+  main{ padding-top:84px; }
   section{ padding:84px 0; }
 
   .hero{
-    min-height:calc(92svh - 72px);
+    min-height:calc(92svh - 84px);
     margin-top:0;
     background-position:center;
   }
@@ -610,16 +610,17 @@
   footer{ background:var(--navy); }
 
   @media(max-width:768px){
-    .brand-logo{ width:188px; height:48px; }
-    .nav{ min-height:64px; }
-    main{ padding-top:64px; }
+    .brand-logo{ width:215px; height:60px; }
+    .nav{ min-height:72px; }
+    main{ padding-top:72px; }
     section{ padding:60px 0; }
-    .hero{ min-height:calc(88svh - 64px); }
+    .hero{ min-height:calc(88svh - 72px); }
     .hero::before{ background:linear-gradient(180deg, rgba(2,24,60,.45), rgba(2,24,60,.9)); }
     .hero-message{ font-size:20px; }
     .campaign-wrap{ grid-template-columns:1fr; gap:28px; }
     .campaign-copy{ order:-1; }
     .campaign-image{ max-width:520px; margin:0 auto; }
+    section{ scroll-margin-top:72px; }
   }
 </style>
 </head>
@@ -638,7 +639,6 @@
       <a href="#flow">FLOW</a>
       <a href="https://line.me/R/ti/p/@829tswwj">LINE</a>
       <a href="#contact">CONTACT</a>
-      <a href="potato/top.html">POTATO</a>
     </nav>
 
     <button class="menu-btn" type="button" aria-label="メニュー" onclick="openMenu()">☰</button>
@@ -657,7 +657,6 @@
   <a href="#flow" onclick="closeMenu()">FLOW</a>
   <a href="https://line.me/R/ti/p/@829tswwj" onclick="closeMenu()">LINE</a>
   <a href="#contact" onclick="closeMenu()">CONTACT</a>
-  <a href="potato/top.html">POTATO</a>
 </aside>
 
 <main>
